@@ -1,1 +1,1 @@
-web: cd venv; gunicorn -w 4 main:app
+web: cd venv; gunicorn -w 1 main:app
