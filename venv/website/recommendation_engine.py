@@ -9,7 +9,7 @@
 import dill
 import pandas as pd
 import wget
-import website.data_loading as dl
+from .data_loading import MatrixFactorization, Loader
 from torch import no_grad
 from torch.cuda import is_available
 from sklearn.preprocessing import StandardScaler
@@ -37,7 +37,7 @@ class RecommendationEngine:
         self.steam_games['combined_features'] = features
         self.count_matrix = CountVectorizer().fit_transform(self.steam_games['combined_features'])
 
-        self.complete_set = dl.Loader(self.user_ratings)
+        self.complete_set = Loader(self.user_ratings)
         self.genre_avg_hrs = test_data['genre_avg_hrs']
         self.dev_ratings = test_data['dev_ratings']
         self.model = test_data['model']
