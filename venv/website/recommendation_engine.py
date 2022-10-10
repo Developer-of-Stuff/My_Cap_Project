@@ -8,6 +8,7 @@
 
 import pickle
 import pandas as pd
+import wget
 import website.data_loading as dl
 from torch import no_grad
 from torch.cuda import is_available
@@ -17,11 +18,15 @@ from fuzzywuzzy.process import extractOne
 
 class RecommendationEngine:
     def __init__(self, games_url, ratings_url, test_data_url):
-        self.steam_games = pd.read_csv(games_url)
-        self.user_ratings = pd.read_csv(ratings_url)
+        games_file = wget.download(games_url)
+        ratings_file = wget.download(ratings_url)
+        test_data_raw = wget.download(test_data_url)
 
-        with open(test_data_url, 'rb') as datafile:
-            test_data = pickle.load(datafile)
+        self.steam_games = pd.read_csv(games_file)
+        self.user_ratings = pd.read_csv(ratings_file)
+
+        with open(test_data_raw, 'rb') as raw_data:
+            test_data = pickle.load(raw_data)
 
         self.similarities = test_data['similarities']
         self.complete_set = dl.Loader(self.user_ratings)
