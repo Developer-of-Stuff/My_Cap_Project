@@ -2,9 +2,9 @@ from flask import Blueprint, render_template, request
 from .recommendation_engine import RecommendationEngine
 
 views = Blueprint('views', __name__)
-engine = RecommendationEngine('website/static/edited_steam_games.csv',
-                              'website/static/indexed_ratings_appid.csv',
-                              'website/static/train_test_data.pkl')
+engine = RecommendationEngine('https://heroku-s3-capstone-bucket.s3.us-east-2.amazonaws.com/edited_steam_games.csv',
+                              'https://heroku-s3-capstone-bucket.s3.us-east-2.amazonaws.com/indexed_ratings_appid.csv',
+                              'https://heroku-s3-capstone-bucket.s3.us-east-2.amazonaws.com/train_test_data.pkl')
 
 
 game_title = None
