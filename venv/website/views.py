@@ -1,8 +1,8 @@
+import datatools
 from flask import Blueprint, render_template, request
-from .recommendation_engine import RecommendationEngine
 
 views = Blueprint('views', __name__)
-engine = RecommendationEngine('https://heroku-s3-capstone-bucket.s3.us-east-2.amazonaws.com/edited_steam_games.csv',
+engine = datatools.RecommendationEngine('https://heroku-s3-capstone-bucket.s3.us-east-2.amazonaws.com/edited_steam_games.csv',
                               'https://heroku-s3-capstone-bucket.s3.us-east-2.amazonaws.com/indexed_ratings_appid.csv',
                               'https://heroku-s3-capstone-bucket.s3.us-east-2.amazonaws.com/train_test_data.pkl')
 
