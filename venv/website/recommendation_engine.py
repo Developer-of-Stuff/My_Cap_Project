@@ -9,7 +9,7 @@
 import dill
 import pandas as pd
 import wget
-from .data_loading import Loader, MatrixFactorization
+import website.data_loading as dl
 from torch import no_grad
 from torch.cuda import is_available
 from sklearn.preprocessing import StandardScaler
