@@ -1,0 +1,143 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: sans-serif;
+    font-size: 1.1rem;
+    color: #fff;
+}
+
+a {
+    text-decoration: none;
+}
+
+h1 {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+h3 {
+    font-weight: bold;
+    font-size: 1.3rem;
+}
+
+body {
+    background-color: #444;
+}
+
+main {
+    width: 70%;
+    margin: 30px auto;
+    border-top: 2px solid #fff;
+    text-align: center;
+}
+
+main div {
+    padding: 30px 80px;
+}
+
+tr td:nth-child(3) {
+    text-align: center;
+}
+
+.games-desc {
+    padding: 20px 0;
+    max-width: 900px;
+    min-width: 700px;
+}
+
+.navbar {
+    width: 60%;
+    height: 7vh;
+    display: flex;
+    align-items: center;
+    background-color: #444;
+    justify-content: space-between;
+    padding: 3em 3em 0 3em;
+    margin: 0 auto;
+}
+
+.note {
+    background-color: #E4A209;
+    max-width: 900px;
+    margin: 15px auto;
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid black;
+}
+
+.note i {
+    color: #000;
+}
+
+.output {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px solid #fff;
+    margin-bottom: 20px;
+}
+
+.visualizations {
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    margin-top: 20px;
+    padding: 0;
+}
+
+.visualizations div {
+    margin: 0;
+    padding: 0;
+}
+
+.welcome {
+    padding-bottom: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+#nav-links {
+    display: flex;
+    justify-content: space-between;
+    width: 25%;
+}
+
+#nav-links li {
+    display: inline;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+#nav-links li:hover {
+    background-color: #777;
+}
+
+#rec-list {
+    font-size: 0.9rem;
+    text-align: left;
+    width: 100%;
+}
+
+#rec-list td {
+    padding: 0 5px;
+}
+
+#search-button {
+    background-color: #3493FF;
+    padding: 0 10px;
+    border-radius: 4px;
+}
+
+#search-button:hover {
+    background-color: #7EA2E9;
+}
+
+#user-input {
+    color: #000;
+    padding: 3px;
+}
+
+#welcome-text-border {
+    margin-top: 35px;
+}

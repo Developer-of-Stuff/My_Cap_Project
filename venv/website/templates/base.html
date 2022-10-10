@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}GGSI Game Recommender{% endblock %}</title>
+    <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
+    <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
+    <py-env>
+        - matplotlib
+        - numpy
+    </py-env>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <h1>GGSI Game Recommender</h1>
+        <ul id="nav-links">
+            <li><a href="#">Link 1</a></li>
+            <li><a href="#">Link 2</a></li>
+            <li><a href="#">Link 3</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="welcome">
+            <p>Welcome to the GGSI Game Recommender!</p>
+            <br>
+            <p>Here you can enter the title of a game into the search bar below; our system will search for the most similar title on record, and return the 5 most similar titles to it.</p>
+            <br>
+            <p>Give it a try!</p>
+            <hr id="welcome-text-border"/>
+        </div>
+        <form method="POST">
+            <div class="game-input">
+                <label for="user-input">Enter the title of the game you wish to find similar titles to:</label>
+                <br><br>
+                <input name='user-input' list="suggested-titles" type="text" id="user-input" placeholder="Enter title here">
+                <datalist id="suggested-titles">
+                    <option value="The Witcher 3"></option>
+                    <option value="Fallout 4"></option>
+                    <option value="Portal"></option>
+                    <option value="DOOM"></option>
+                    <option value="Counterstrike"></option>
+                </datalist>
+                <button id="search-button" type="submit">Search</button>
+            </div>
+        </form>
+        <p class="note">
+            <i>Please be aware that loading times for the recommendations vary and can be as long as 45 seconds. This is not an error, and will be remedied in future releases.</i>
+            <br>
+            <i>Thank you for your patience.</i>
+        </p>
+        {% if steam_name %}
+            <div class="output">
+                <h3>5 recommendations for {{steam_name}}:</h3>
+                <div class="games-desc">
+                    {% if output %}
+                        <table id="rec-list">
+                            <th>
+                                <td>Title</td>
+                                <td>Similarity Score</td>
+                            </th>
+                            <tr>
+                                <td>1.</td>
+                                <td>{{output[0]}}</td>
+                                <td>{{cos_values[game_indices[0]]}}%</td>
+                            </tr>
+                            <tr>
+                                <td>2.</td>
+                                <td>{{output[1]}}</td>
+                                <td>{{cos_values[game_indices[1]]}}%</td>
+                            </tr>
+                            <tr>
+                                <td>3.</td>
+                                <td>{{output[2]}}</td>
+                                <td>{{cos_values[game_indices[2]]}}%</td>
+                            </tr>
+                            <tr>
+                                <td>4.</td>
+                                <td>{{output[3]}}</td>
+                                <td>{{cos_values[game_indices[3]]}}%</td>
+                            </tr>
+                            <tr>
+                                <td>5.</td>
+                                <td>{{output[4]}}</td>
+                                <td>{{cos_values[game_indices[4]]}}%</td>
+                            </tr>
+                        </table>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+        <h3>Data Visualizations:</h3>
+        <div class="visualizations">
+            <div class="cos-scatter">
+                {% if cos_values %}
+                    <py-script>
+                        import numpy as np
+                        import matplotlib.pyplot as plt
+
+                        cosine_values = {{cos_values}}
+                        fig, ax = plt.subplots()
+
+                        plt.plot(cosine_values)
+                        plt.xlabel('Steam Game Index')
+                        plt.ylabel('Cosine Similarity Score')
+
+                        title_string = "{{steam_name}}"
+
+                        plt.title('Cosine Similarity Scores for ' + title_string)
+
+                        fig
+                    </py-script>
+                {% endif %}
+            </div>
+            <div class="hours-per-genre">
+                {% if genre_hours %}
+                    <py-script>
+                        import numpy as np
+                        import matplotlib.pyplot as plt
+
+                        avg_hrs_genre = {{genre_hours}}
+                        x = avg_hrs_genre.keys()
+                        y = avg_hrs_genre.values()
+                        fig, ax = plt.subplots()
+
+                        plt.sca(ax)
+                        plt.xticks(rotation=75)
+
+                        plt.plot(x, y)
+                        plt.xlabel('Game Genre')
+                        plt.ylabel('Average Hours Played per User')
+                        plt.title('Average Hours Played by Genre')
+
+                        plt.tight_layout()
+
+                        fig
+                    </py-script>
+                {% endif %}
+            </div>
+            <div class="rating-scatter">
+                {% if dev_rating %}
+                    <py-script>
+                        import numpy as np
+                        import matplotlib.pyplot as plt
+
+                        dev_ratings = {{dev_rating}}
+                        x = list(dev_ratings.keys())[:25]
+                        y = list(dev_ratings.values())[:25]
+                        fig, ax = plt.subplots()
+
+                        plt.sca(ax)
+                        plt.xticks(rotation=90)
+
+                        plt.plot(x, y)
+                        plt.xlabel('Developers')
+                        plt.ylabel('Average Rating per Game')
+                        plt.title('Average Rating by Developer (Limited to 25)')
+
+                        plt.tight_layout()
+
+                        fig
+                    </py-script>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</body>
+</html>
