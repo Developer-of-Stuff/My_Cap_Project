@@ -6,7 +6,7 @@
 # get_ipython().system('pip install fuzzywuzzy')
 # get_ipython().system('pip install python-Levenshtein')
 
-import pickle
+import dill
 import pandas as pd
 import wget
 import website.data_loading as dl
@@ -26,7 +26,7 @@ class RecommendationEngine:
         self.user_ratings = pd.read_csv(ratings_file)
 
         with open(test_data_raw, 'rb') as raw_data:
-            test_data = pickle.load(raw_data)
+            test_data = dill.load(raw_data)
 
         self.similarities = test_data['similarities']
         self.complete_set = dl.Loader(self.user_ratings)
