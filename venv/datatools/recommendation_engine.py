@@ -1,7 +1,7 @@
 import dill
 import pandas as pd
 import wget
-from datatools.data_loading import Loade
+from datatools.data_loading import Loader
 from torch import no_grad
 from torch.cuda import is_available
 from sklearn.preprocessing import StandardScaler
