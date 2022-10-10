@@ -12,11 +12,12 @@ sg_titles = None
 steam_index = None
 steam_name = None
 game_indices = None
+cos_values = None
 
 
 @views.route('/', methods=['GET', 'POST'])
 def home():
-    global game_title, sg_titles, steam_name, steam_index, game_indices
+    global game_title, sg_titles, steam_name, steam_index, game_indices, cos_values
     genre_hours = engine.get_genre_avg_hrs()
     dev_rating = engine.get_dev_ratings()
 
@@ -24,13 +25,12 @@ def home():
         user_input = request.form.get('user-input')
         if game_title is None and user_input != "":
             game_title = user_input
-            steam_index, appid, steam_name, sg_titles, game_indices = engine.recommender(game_title, 5)
+            steam_index, appid, steam_name, sg_titles, game_indices, cos_values = engine.recommender(game_title, 5)
         elif game_title != user_input and user_input != "":
             game_title = user_input
-            steam_index, appid, steam_name, sg_titles, game_indices = engine.recommender(game_title, 5)
+            steam_index, appid, steam_name, sg_titles, game_indices, cos_values = engine.recommender(game_title, 5)
 
         if sg_titles is not None:
-            cos_values = engine.get_cos_sim()[steam_index].tolist()
             new_cos_values = []
             for value in cos_values:
                 value *= 10000

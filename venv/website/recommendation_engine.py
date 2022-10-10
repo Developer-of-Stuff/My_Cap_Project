@@ -13,6 +13,8 @@ import website.data_loading as dl
 from torch import no_grad
 from torch.cuda import is_available
 from sklearn.preprocessing import StandardScaler
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 from fuzzywuzzy.process import extractOne
 
 
@@ -28,7 +30,13 @@ class RecommendationEngine:
         with open(test_data_raw, 'rb') as raw_data:
             test_data = dill.load(raw_data)
 
-        self.similarities = test_data['similarities']
+        features = []
+        for i in range(self.steam_games.shape[0]):
+            features.append(self.steam_games['name'][i] + ' ' + self.steam_games['developers'][i] + ' ' + self.steam_games['tags'][i])
+
+        self.steam_games['combined_features'] = features
+        self.count_matrix = CountVectorizer().fit_transform(self.steam_games['combined_features'])
+
         self.complete_set = dl.Loader(self.user_ratings)
         self.genre_avg_hrs = test_data['genre_avg_hrs']
         self.dev_ratings = test_data['dev_ratings']
@@ -43,8 +51,9 @@ class RecommendationEngine:
         steam_index = self.steam_games.loc[self.steam_games.appid == appid].index.values[0]
 
         similarity_scores = {}
-        for i in range(len(self.similarities[steam_index])):
-            similarity_scores[self.steam_games.iloc[i].appid] = self.similarities[steam_index][i]
+        similarities = cosine_similarity(self.count_matrix)[steam_index]
+        for i in range(len(similarities)):
+            similarity_scores[self.steam_games.iloc[i].appid] = similarities[i]
 
         steam_name = self.steam_games.loc[self.steam_games.appid == appid]['name'].values[0]
 
@@ -81,7 +90,7 @@ class RecommendationEngine:
                 game_appid = self.complete_set.index_to_appid[idx]
                 output.append(self.steam_games.loc[self.steam_games.appid == game_appid].name.values[0])
                 output_steam_indices.append(self.steam_games.loc[self.steam_games.appid == game_appid].index.values[0])
-        return [steam_index, appid, steam_name, output, output_steam_indices]
+        return [steam_index, appid, steam_name, output, output_steam_indices, similarities]
 
     def get_model(self):
         return self.model
