@@ -1,9 +1,9 @@
+
 import dill
 import pandas as pd
 import wget
 from datatools.data_loading import Loader
 from torch import no_grad
-from torch.cuda import is_available
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -46,42 +46,60 @@ class RecommendationEngine:
     def recommender(self, name_input, n_games_requested):
         output = []
         output_steam_indices = []
-        cuda = is_available()
         ur_index = extractOne(name_input, self.user_ratings['game_title'])[2]
         appid = self.user_ratings.iloc[ur_index].appid
         steam_index = self.steam_games.loc[self.steam_games.appid == appid].index.values[0]
 
-        similarity_scores = {}
-        similarities = cosine_similarity(self.count_matrix)[steam_index]
-        for i in range(len(similarities)):
-            similarity_scores[self.steam_games.iloc[i].appid] = similarities[i]
+        orig_similarities = cosine_similarity(self.count_matrix)[steam_index]
+        similarities = list(enumerate(orig_similarities))
+        similarities.sort(key=lambda x: x[1], reverse=True)
+        similarities = similarities[1:101]
+
+        game_list_check = []
+        for value in similarities:
+            check_idx = value[0]
+            check_appid = self.steam_games.iloc[check_idx].appid
+            game_list_check.append(check_appid)
 
         steam_name = self.steam_games.loc[self.steam_games.appid == appid]['name'].values[0]
-
         loader_index = self.complete_set.appid_to_index[appid]
         user_data = self.complete_set.get_user_data(loader_index)
         with no_grad():
             self.model.eval()
             score_to_idx = {}
+            loader_idx_avg = {}
             n_users = len(user_data[0])
             recom_games_indices = []
+            edited_user_data = []
             for game_data in user_data:
-                if cuda:
-                    user_pred = self.model(game_data.cuda()).cpu().numpy()
-                else:
-                    user_pred = self.model(game_data).numpy()
+                data_loader_idx = game_data.numpy()[0][1]
+                data_appid = self.complete_set.index_to_appid[data_loader_idx]
+                if data_appid in game_list_check:
+                    edited_user_data.append(game_data)
 
-                transformer = StandardScaler()
-                transformer.fit(user_pred.reshape(-1, 1))
-                transformed_values = transformer.transform(user_pred.reshape(-1, 1))
+            for game_data in edited_user_data:
+                user_pred = self.model(game_data).numpy()
+                transformed_values = StandardScaler().fit_transform(user_pred.reshape(-1, 1))
 
                 average = 0
                 for pred in transformed_values:
                     average += pred[0]
                 average /= n_users
 
-                game_sim_score = similarity_scores[self.complete_set.index_to_appid[game_data.numpy()[0][1]]]
-                score_to_idx[average + game_sim_score / 10] = game_data.numpy()[0][1]
+                loader_idx_avg[game_data.numpy()[0][1]] = average
+
+            for loader_idx in loader_idx_avg:
+                game_appid = self.complete_set.index_to_appid[loader_idx]
+                game_steam_index = self.steam_games.loc[self.steam_games.appid == game_appid].index.values[0]
+
+                game_sim_score = 0
+                for value in similarities:
+                    if game_steam_index == value[0]:
+                        game_sim_score = value[1]
+                        break
+
+                score_to_idx[loader_idx_avg[loader_idx] + game_sim_score / 10] = loader_idx
+
             for i in range(n_games_requested):
                 max_idx = score_to_idx[max(score_to_idx)]
                 recom_games_indices.append(max_idx)
@@ -91,7 +109,7 @@ class RecommendationEngine:
                 game_appid = self.complete_set.index_to_appid[idx]
                 output.append(self.steam_games.loc[self.steam_games.appid == game_appid].name.values[0])
                 output_steam_indices.append(self.steam_games.loc[self.steam_games.appid == game_appid].index.values[0])
-        return [steam_index, appid, steam_name, output, output_steam_indices, similarities]
+        return [steam_index, appid, steam_name, output, output_steam_indices, orig_similarities]
 
     def get_model(self):
         return self.model
@@ -110,7 +128,6 @@ class RecommendationEngine:
 
     def get_user_ratings(self):
         return self.user_ratings
-
 
 
 
