@@ -53,7 +53,7 @@ class RecommendationEngine:
         orig_similarities = cosine_similarity(self.count_matrix)[steam_index]
         similarities = list(enumerate(orig_similarities))
         similarities.sort(key=lambda x: x[1], reverse=True)
-        similarities = similarities[1:101]
+        similarities = similarities[1:51]
 
         game_list_check = []
         for value in similarities:
@@ -99,7 +99,7 @@ class RecommendationEngine:
                         game_sim_score = value[1]
                         break
 
-                score_to_idx[loader_idx_avg[loader_idx] + game_sim_score / 10] = loader_idx
+                score_to_idx[loader_idx_avg[loader_idx] + game_sim_score / 12] = loader_idx
 
             for i in range(n_games_requested):
                 max_idx = score_to_idx[max(score_to_idx)]
