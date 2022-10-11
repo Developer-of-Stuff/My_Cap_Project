@@ -26,7 +26,7 @@ class Loader(Dataset):
         self.x = tensor(self.x)
         self.y = tensor(self.y)
 
-    def get_user_data(self, game_index):
+    def get_user_data(self, game_index, game_list_check):
         values = []
         users = []
         output = []
@@ -37,9 +37,10 @@ class Loader(Dataset):
             users.append(user[0])
         for item in self.x:
             game_user_list = []
-            for user in users:
-                if item.numpy()[1] != game_index:
-                    game_user_list.append([user, item.numpy()[1]])
+            item_idx = item.numpy()[1]
+            if item_idx != game_index and self.index_to_appid[item_idx] in game_list_check:
+                for user in users:
+                    game_user_list.append([user, item_idx])
             if game_user_list:
                 output.append(LongTensor(np.array(game_user_list)))
         return output

@@ -63,7 +63,7 @@ class RecommendationEngine:
 
         steam_name = self.steam_games.loc[self.steam_games.appid == appid]['name'].values[0]
         loader_index = self.complete_set.appid_to_index[appid]
-        user_data = self.complete_set.get_user_data(loader_index)
+        user_data = self.complete_set.get_user_data(loader_index, game_list_check)
         with no_grad():
             self.model.eval()
             score_to_idx = {}
@@ -71,6 +71,7 @@ class RecommendationEngine:
             n_users = len(user_data[0])
             recom_games_indices = []
             edited_user_data = []
+
             for game_data in user_data:
                 data_loader_idx = game_data.numpy()[0][1]
                 data_appid = self.complete_set.index_to_appid[data_loader_idx]
