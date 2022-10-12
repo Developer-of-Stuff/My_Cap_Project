@@ -70,7 +70,7 @@ class RecommendationEngine:
         orig_similarities = cosine_similarity(self.count_matrix)[steam_index]
         similarities = list(enumerate(orig_similarities))
         similarities.sort(key=lambda x: x[1], reverse=True)
-        similarities = similarities[1:51]
+        similarities = similarities[1:36]
 
         game_list_check = []
         for value in similarities:
