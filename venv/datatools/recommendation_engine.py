@@ -7,6 +7,7 @@ from torch import no_grad
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from numpy import mean, std
 from fuzzywuzzy.process import extractOne
 
 
@@ -40,12 +41,28 @@ class RecommendationEngine:
 
         self.complete_set = Loader(self.user_ratings)
         self.model = test_data['model']
-        self.genre_avg_hrs = test_data['genre_avg_hrs']
-        self.dev_ratings = test_data['dev_ratings']
+        self.game_hours = test_data['hours_by_game']
+        self.ratings_list = {}
+
+        for appid in self.game_hours:
+            if appid in self.steam_games['appid'].values:
+                if self.steam_games.loc[self.steam_games.appid == appid].rating.values[0] is not None:
+                    self.ratings_list[self.game_hours[appid][1] / self.game_hours[appid][0]] = self.steam_games.loc[self.steam_games.appid == appid].rating.values[0]
+
+        rat_list_keys = list(self.ratings_list.keys())
+        ratings_mean, ratings_std = mean(rat_list_keys), std(rat_list_keys)
+        cut_off = ratings_std * 3
+        lower, upper = ratings_mean - cut_off, ratings_mean + cut_off
+        outliers = [x for x in rat_list_keys if x < lower or x > upper]
+
+        for value in outliers:
+            for point in self.ratings_list:
+                if point == value:
+                    self.ratings_list.pop(point)
+                    break
 
     def recommender(self, name_input, n_games_requested):
-        output = []
-        output_steam_indices = []
+        output = {'steam_index': [], 'title': [], 'appid': [], 'rating': [], 'avg_hours': []}
         ur_index = extractOne(name_input, self.user_ratings['game_title'])[2]
         appid = self.user_ratings.iloc[ur_index].appid
         steam_index = self.steam_games.loc[self.steam_games.appid == appid].index.values[0]
@@ -108,9 +125,13 @@ class RecommendationEngine:
 
             for idx in recom_games_indices:
                 game_appid = self.complete_set.index_to_appid[idx]
-                output.append(self.steam_games.loc[self.steam_games.appid == game_appid].name.values[0])
-                output_steam_indices.append(self.steam_games.loc[self.steam_games.appid == game_appid].index.values[0])
-        return [steam_index, appid, steam_name, output, output_steam_indices, orig_similarities]
+                game_steam_games_entry = self.steam_games.loc[self.steam_games.appid == game_appid]
+                output['steam_index'].append(game_steam_games_entry.index.values[0])
+                output['title'].append(game_steam_games_entry.name.values[0])
+                output['appid'].append(game_appid)
+                output['rating'].append(game_steam_games_entry.rating.values[0])
+                output['avg_hours'].append(self.game_hours[game_appid][1] / self.game_hours[game_appid][0])
+        return [steam_index, appid, steam_name, output, orig_similarities]
 
     def get_model(self):
         return self.model
@@ -118,11 +139,11 @@ class RecommendationEngine:
     def get_cos_sim(self):
         return self.similarities
 
-    def get_genre_avg_hrs(self):
-        return self.genre_avg_hrs
+    def get_game_hours(self):
+        return self.game_hours
 
-    def get_dev_ratings(self):
-        return self.dev_ratings
+    def get_ratings_list(self):
+        return self.ratings_list
 
     def get_steam_games(self):
         return self.steam_games

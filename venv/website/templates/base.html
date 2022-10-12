@@ -93,80 +93,109 @@
                 </div>
             </div>
         {% endif %}
-        <h3>Data Visualizations:</h3>
-        <div class="visualizations">
-            <div class="cos-scatter">
-                {% if cos_values %}
-                    <py-script>
-                        import numpy as np
-                        import matplotlib.pyplot as plt
+        {% if output %}
+            <h3>Data Visualizations:</h3>
+            <div class="visualizations">
+                <div class="hrs-rating-scatter">
+                    {% if hrs_v_rating %}
+                        <py-script>
+                            import numpy as np
+                            import matplotlib.pyplot as plt
 
-                        cosine_values = {{cos_values}}
-                        fig, ax = plt.subplots()
+                            hvr = {{hrs_v_rating}}
+                            x = hvr.keys()
+                            y = hvr.values()
+                            fig, ax = plt.subplots()
 
-                        plt.plot(cosine_values)
-                        plt.xlabel('Steam Game Index')
-                        plt.ylabel('Cosine Similarity Score')
+                            plt.scatter(x, y)
+                            plt.xlabel('Average Hours Played')
+                            plt.ylabel('User Rating')
 
-                        title_string = "{{steam_name}}"
+                            plt.title('Average Hours Played vs. User Ratings')
 
-                        plt.title('Cosine Similarity Scores for ' + title_string)
+                            fig
+                        </py-script>
+                    {% endif %}
+                </div>
+                <div class="hours-per-game">
+                    {% if game_hours %}
+                        <py-script>
+                            hours_per_game = {{game_hours}}
+                            x = hours_per_game[0]
 
-                        fig
-                    </py-script>
-                {% endif %}
+                            n_chars = 15
+                            edited_x = []
+                            idx = 0
+                            for title in x:
+                                idx += 1
+                                title = str(idx) + '. ' + title
+                                if len(title) > n_chars:
+                                    title = title[:n_chars-1]
+                                    title += '...'
+                                edited_x.append(title)
+
+                            x = edited_x
+                            y = hours_per_game[1]
+
+                            def make_autopct(values):
+                                def my_autopct(pct):
+                                    total = sum(values)
+                                    val = round(pct*total/100.0, 1)
+                                    return '{v:.1f}'.format(v=val)
+                                return my_autopct
+
+                            plt.pie(y, labels=edited_x, autopct=make_autopct(y))
+                            plt.xlabel(None)
+                            plt.ylabel(None)
+                            plt.title('Average Hours Played by Game')
+
+                            plt.tight_layout()
+
+                            fig
+                        </py-script>
+                    {% endif %}
+                </div>
+                <div class="rating-bar">
+                    {% if rating_per_rec %}
+                        <py-script>
+
+                            rating_per_rec = {{rating_per_rec}}
+                            x = rating_per_rec[0]
+
+                            n_chars = 15
+                            edited_x = []
+                            idx = 0
+                            for title in x:
+                                idx += 1
+                                title = str(idx) + '. ' + title
+                                if len(title) > n_chars:
+                                    title = title[:n_chars-1]
+                                    title += '...'
+                                edited_x.append(title)
+
+                            x = edited_x
+
+                            y = rating_per_rec[1]
+                            fig, ax = plt.subplots()
+
+                            plt.sca(ax)
+                            plt.xticks(rotation=75)
+                            plt.yticks(ticks=[40, 50, 60, 70, 80, 90, 100])
+                            plt.ylim(35, 100)
+
+                            plt.bar(x, y)
+                            plt.xlabel('Recommended Games')
+                            plt.ylabel('User Rating')
+                            plt.title('User Rating for our Recommended Games')
+
+                            plt.tight_layout()
+
+                            fig
+                        </py-script>
+                    {% endif %}
+                </div>
             </div>
-            <div class="hours-per-genre">
-                {% if genre_hours %}
-                    <py-script>
-                        import numpy as np
-                        import matplotlib.pyplot as plt
-
-                        avg_hrs_genre = {{genre_hours}}
-                        x = avg_hrs_genre.keys()
-                        y = avg_hrs_genre.values()
-                        fig, ax = plt.subplots()
-
-                        plt.sca(ax)
-                        plt.xticks(rotation=75)
-
-                        plt.plot(x, y)
-                        plt.xlabel('Game Genre')
-                        plt.ylabel('Average Hours Played per User')
-                        plt.title('Average Hours Played by Genre')
-
-                        plt.tight_layout()
-
-                        fig
-                    </py-script>
-                {% endif %}
-            </div>
-            <div class="rating-scatter">
-                {% if dev_rating %}
-                    <py-script>
-                        import numpy as np
-                        import matplotlib.pyplot as plt
-
-                        dev_ratings = {{dev_rating}}
-                        x = list(dev_ratings.keys())[:25]
-                        y = list(dev_ratings.values())[:25]
-                        fig, ax = plt.subplots()
-
-                        plt.sca(ax)
-                        plt.xticks(rotation=90)
-
-                        plt.plot(x, y)
-                        plt.xlabel('Developers')
-                        plt.ylabel('Average Rating per Game')
-                        plt.title('Average Rating by Developer (Limited to 25)')
-
-                        plt.tight_layout()
-
-                        fig
-                    </py-script>
-                {% endif %}
-            </div>
-        </div>
+        {% endif %}
     </main>
 </body>
 </html>
